@@ -1,24 +1,47 @@
-﻿# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+﻿# Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+artifacts/
+publish/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
 
-# Virtual environments
-.venv/
-venv/
-ENV/
+# Visual Studio
+.vs/
+*.vspscc
+*.vssscc
 
-# Build / packaging
-build/
-dist/
-*.spec
+# Rider / IDE
+.idea/
+.vscode/
 
-# Local app data (user-specific)
-settings.json
+# .NET
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
 
-# OS / editor
+# OS
 .DS_Store
 Thumbs.db
 desktop.ini
-.vscode/
-.idea/
+
+# Local app/user data
+settings.json
+*.local.json
+
+# Legacy Python (kept in repo under legacy/, but ignore caches)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+build/
+dist/
+*.spec

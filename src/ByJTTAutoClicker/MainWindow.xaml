@@ -1,0 +1,321 @@
+﻿<Window x:Class="ByJTTAutoClicker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="ByJTT AutoClicker"
+        MinWidth="680" MinHeight="600"
+        Width="860" Height="760"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource App.BackgroundBrush}"
+        Foreground="{DynamicResource App.TextBrush}"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        Icon="app.ico"
+        AutomationProperties.Name="ByJTT AutoClicker">
+    <Window.Resources>
+        <Style x:Key="InlineHelp" TargetType="TextBlock" BasedOn="{StaticResource MutedText}">
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+        <Style x:Key="StatValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
+        </Style>
+        <Style x:Key="StatLabel" TargetType="TextBlock" BasedOn="{StaticResource MutedText}">
+            <Setter Property="Margin" Value="0,0,0,2"/>
+        </Style>
+    </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding StopCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+        <KeyBinding Key="F1" Command="{Binding HelpCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="28,22,28,12" Background="{DynamicResource App.BackgroundBrush}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="AutoClicker" Style="{StaticResource TitleText}" AutomationProperties.HeadingLevel="Level1"/>
+                    <TextBlock Text="Fast, precise clicks — simple controls, clear feedback, and safe defaults."
+                               Style="{StaticResource SubtitleText}" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Border x:Name="StatusPill" Style="{StaticResource StatusPillBorder}"
+                            Background="{DynamicResource App.DangerBgBrush}" BorderBrush="{DynamicResource App.DangerFgBrush}"
+                            AutomationProperties.Name="Status: Stopped" HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse x:Name="StatusDot" Width="8" Height="8" Fill="{DynamicResource App.DangerFgBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="StatusPillText" Text="Stopped" FontWeight="SemiBold" Foreground="{DynamicResource App.DangerFgBrush}"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="ByJTT  •  v4.1  •  Local &amp; private" Style="{StaticResource MutedText}" HorizontalAlignment="Right" Margin="0,8,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="28,6,28,16"
+                      Focusable="False" IsTabStop="False">
+            <StackPanel>
+                <!-- Status summary -->
+                <Border Style="{StaticResource CardBorder}" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Clicks" Style="{StaticResource StatLabel}"/>
+                                <TextBlock x:Name="ClicksStatText" Text="0" Style="{StaticResource StatValue}" AutomationProperties.Name="Clicks completed"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                <TextBlock Text="Elapsed" Style="{StaticResource StatLabel}"/>
+                                <TextBlock x:Name="ElapsedStatText" Text="0.0 s" Style="{StaticResource StatValue}" AutomationProperties.Name="Elapsed time"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                                <TextBlock Text="Rate" Style="{StaticResource StatLabel}"/>
+                                <TextBlock x:Name="RateText" Text="~10 /s" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource App.TextBrush}" AutomationProperties.Name="Estimated click rate"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="Hotkey" Style="{StaticResource StatLabel}"/>
+                                <TextBlock x:Name="HotkeyStatText" Text="F6" Style="{StaticResource StatValue}" AutomationProperties.Name="Active hotkey"/>
+                            </StackPanel>
+                        </Grid>
+                        <ProgressBar x:Name="RunProgress" Grid.Row="1" Margin="0,16,0,10" Minimum="0" Maximum="100" Value="0"
+                                     Height="6" AutomationProperties.Name="Run progress"/>
+                        <Border Grid.Row="2" Background="{DynamicResource App.SubtleBrush}" BorderBrush="{DynamicResource App.BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE946;" Style="{StaticResource IconText}" Margin="0,0,10,0" VerticalAlignment="Top"/>
+                                <TextBlock x:Name="StatusDetailText" Text="Ready. Press Start or use the global hotkey to begin."
+                                           Foreground="{DynamicResource App.TextBrush}" FontSize="13" TextWrapping="Wrap"
+                                           AutomationProperties.Name="Status details" AutomationProperties.LiveSetting="Polite"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Click -->
+                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0,0,6,12">
+                        <StackPanel>
+                            <TextBlock Text="Click" Style="{StaticResource SectionTitleText}" AutomationProperties.HeadingLevel="Level2"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Label Grid.Row="0" Grid.Column="0" Content="_Interval" Style="{StaticResource FieldLabelControl}" Margin="0,0,8,10" Target="{Binding ElementName=IntervalBox}"/>
+                                <Grid Grid.Row="0" Grid.Column="1" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="IntervalBox" Text="100"
+                                             AutomationProperties.Name="Interval in milliseconds"
+                                             AutomationProperties.HelpText="Time between clicks in milliseconds."
+                                             ToolTip="Time between clicks (ms). Lower = faster."/>
+                                    <TextBlock Grid.Column="1" Text="ms" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource App.TextMutedBrush}"/>
+                                </Grid>
+
+                                <Label Grid.Row="1" Grid.Column="0" Content="_Jitter" Style="{StaticResource FieldLabelControl}" Margin="0,0,8,10" Target="{Binding ElementName=JitterBox}"/>
+                                <Grid Grid.Row="1" Grid.Column="1" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="JitterBox" Text="0"
+                                             AutomationProperties.Name="Random jitter in milliseconds"
+                                             ToolTip="Optional random variation (± ms) for a more natural rhythm."/>
+                                    <TextBlock Grid.Column="1" Text="± ms" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource App.TextMutedBrush}"/>
+                                </Grid>
+
+                                <Label Grid.Row="2" Grid.Column="0" Content="_Button" Style="{StaticResource FieldLabelControl}" Margin="0,0,8,10" Target="{Binding ElementName=ButtonCombo}"/>
+                                <ComboBox x:Name="ButtonCombo" Grid.Row="2" Grid.Column="1" Margin="0,0,0,10"
+                                          AutomationProperties.Name="Mouse button">
+                                    <ComboBoxItem Content="Left" IsSelected="True"/>
+                                    <ComboBoxItem Content="Right"/>
+                                    <ComboBoxItem Content="Middle"/>
+                                </ComboBox>
+
+                                <Label Grid.Row="3" Grid.Column="0" Content="_Type" Style="{StaticResource FieldLabelControl}" Target="{Binding ElementName=ClickTypeCombo}"/>
+                                <ComboBox x:Name="ClickTypeCombo" Grid.Row="3" Grid.Column="1"
+                                          AutomationProperties.Name="Click type">
+                                    <ComboBoxItem Content="Single" IsSelected="True"/>
+                                    <ComboBoxItem Content="Double"/>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Repeat & timing -->
+                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource CardBorder}" Margin="6,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Repeat &amp; timing" Style="{StaticResource SectionTitleText}" AutomationProperties.HeadingLevel="Level2"/>
+                            <RadioButton x:Name="RepeatUntilStoppedRadio" Content="Repeat until I stop it" GroupName="RepeatMode" IsChecked="True"
+                                         Margin="0,0,0,6" AutomationProperties.Name="Repeat until stopped"
+                                         Checked="RepeatModeChanged" Unchecked="RepeatModeChanged"/>
+                            <RadioButton x:Name="RepeatCountRadio" Content="Repeat a fixed number of times" GroupName="RepeatMode"
+                                         Margin="0,0,0,12" AutomationProperties.Name="Repeat a fixed number of times"
+                                         Checked="RepeatModeChanged" Unchecked="RepeatModeChanged"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Content="C_ount" Style="{StaticResource FieldLabelControl}" VerticalAlignment="Center" Target="{Binding ElementName=CountBox}"/>
+                                <TextBox x:Name="CountBox" Grid.Column="1" Text="100"
+                                         AutomationProperties.Name="Number of clicks"
+                                         ToolTip="How many clicks to perform (1–100,000,000)."/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Content="_Delay" Style="{StaticResource FieldLabelControl}" VerticalAlignment="Center" Target="{Binding ElementName=DelayBox}"/>
+                                <TextBox x:Name="DelayBox" Grid.Column="1" Text="0"
+                                         AutomationProperties.Name="Start delay in seconds"
+                                         ToolTip="Countdown before clicking begins (0–60 seconds)."/>
+                                <TextBlock Grid.Column="2" Text="sec" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource App.TextMutedBrush}"/>
+                            </Grid>
+                            <TextBlock Text="Add a short delay to position your target before clicking starts."
+                                       Style="{StaticResource InlineHelp}" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Target -->
+                    <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0,0,6,12">
+                        <StackPanel>
+                            <TextBlock Text="Target" Style="{StaticResource SectionTitleText}" AutomationProperties.HeadingLevel="Level2"/>
+                            <RadioButton x:Name="TargetCursorRadio" Content="Follow current cursor" GroupName="TargetMode" IsChecked="True"
+                                         Margin="0,0,0,6" AutomationProperties.Name="Click at current cursor position"
+                                         Checked="TargetModeChanged" Unchecked="TargetModeChanged"/>
+                            <RadioButton x:Name="TargetFixedRadio" Content="Fixed screen position" GroupName="TargetMode"
+                                         Margin="0,0,0,12" AutomationProperties.Name="Click at a fixed screen position"
+                                         Checked="TargetModeChanged" Unchecked="TargetModeChanged"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Content="_X" Style="{StaticResource FieldLabelControl}" VerticalAlignment="Center" Target="{Binding ElementName=XBox}"/>
+                                <TextBox x:Name="XBox" Grid.Column="1" Margin="0,0,10,0" Text="0" AutomationProperties.Name="Fixed X coordinate"/>
+                                <Label Grid.Column="2" Content="_Y" Style="{StaticResource FieldLabelControl}" VerticalAlignment="Center" Target="{Binding ElementName=YBox}"/>
+                                <TextBox x:Name="YBox" Grid.Column="3" Text="0" AutomationProperties.Name="Fixed Y coordinate"/>
+                            </Grid>
+                            <WrapPanel Margin="0,0,0,8">
+                                <Button x:Name="PickLocationButton" Content="Pick point (3s)" Style="{StaticResource SubtleButton}" Click="PickLocation_Click" Margin="0,0,8,8"
+                                        AutomationProperties.Name="Pick screen location"
+                                        ToolTip="Waits 3 seconds, then captures the cursor position."/>
+                                <Button x:Name="UseCurrentButton" Content="Use cursor" Style="{StaticResource SubtleButton}" Click="UseCurrent_Click" Margin="0,0,0,8"
+                                        AutomationProperties.Name="Use current cursor position"
+                                        ToolTip="Copies the current cursor position into X and Y."/>
+                            </WrapPanel>
+                            <TextBlock x:Name="CursorPositionText" Text="Cursor: —" Style="{StaticResource MutedText}"
+                                       AutomationProperties.Name="Live cursor position" AutomationProperties.LiveSetting="Polite"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Controls & safety -->
+                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CardBorder}" Margin="6,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Controls &amp; safety" Style="{StaticResource SectionTitleText}" AutomationProperties.HeadingLevel="Level2"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Content="_Hotkey" Style="{StaticResource FieldLabelControl}" VerticalAlignment="Center" Target="{Binding ElementName=HotkeyCombo}"/>
+                                <ComboBox x:Name="HotkeyCombo" Grid.Column="1"
+                                          AutomationProperties.Name="Global start and stop hotkey"
+                                          ToolTip="Press this key anywhere to start or stop."
+                                          SelectionChanged="HotkeyCombo_SelectionChanged"/>
+                            </Grid>
+                            <CheckBox x:Name="FailsafeCheck" Content="Failsafe: move mouse to top-left corner to stop"
+                                      IsChecked="True" Margin="0,0,0,6"
+                                      AutomationProperties.Name="Enable failsafe stop at top-left corner"
+                                      ToolTip="Stops immediately if the cursor reaches (0,0). Strongly recommended."/>
+                            <CheckBox x:Name="ConfirmCheck" Content="Ask for confirmation before starting"
+                                      IsChecked="True" Margin="0,0,0,6"
+                                      AutomationProperties.Name="Show confirmation before starting"/>
+                            <CheckBox x:Name="AlwaysOnTopCheck" Content="Keep window on top"
+                                      Margin="0,0,0,10"
+                                      AutomationProperties.Name="Keep window always on top"
+                                      Checked="AlwaysOnTopChanged" Unchecked="AlwaysOnTopChanged"/>
+                            <TextBlock Text="Press Esc to stop when this window is focused. Press F1 for shortcuts."
+                                       Style="{StaticResource MutedText}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <TextBlock Style="{StaticResource MutedText}" Margin="4,0,4,8">
+                    Settings stay on this device. No telemetry, no network, no accounts. Use automated clicking only where permitted.
+                </TextBlock>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Actions -->
+        <Border Grid.Row="2" Padding="28,14,28,22" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource App.BorderBrush}" Background="{DynamicResource App.BackgroundBrush}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="StartStopButton" Grid.Column="0" Content="_Start (F6)" Style="{StaticResource PrimaryButton}"
+                        Click="StartStop_Click" MinHeight="48" Margin="0,0,12,0"
+                        AutomationProperties.Name="Start auto-clicking"
+                        ToolTip="Start or stop auto-clicking (global hotkey also works)."/>
+                <Button x:Name="TestClickButton" Grid.Column="1" Content="Click _once" Click="TestClick_Click" Margin="0,0,8,0"
+                        AutomationProperties.Name="Perform one test click"
+                        ToolTip="Send one test click using the current settings."/>
+                <Button x:Name="SaveButton" Grid.Column="2" Content="Sa_ve" Click="Save_Click" Margin="0,0,8,0"
+                        AutomationProperties.Name="Save settings" ToolTip="Save current settings (Ctrl+S)."/>
+                <Button x:Name="ResetButton" Grid.Column="3" Content="_Reset" Click="Reset_Click"
+                        AutomationProperties.Name="Reset settings to defaults" ToolTip="Restore default settings."/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -1,100 +1,95 @@
 # ByJTT AutoClicker
 
-A simple, dependency-free Windows auto-clicker by **ByJTT**, built with Python and tkinter.
+A modern, minimal Windows auto-clicker by **ByJTT** — built with **WPF on .NET 8** to feel fast, clear, and native on Windows 10/11. Simple controls, safe defaults, and polished feedback without clutter.
 
-> **Responsible use:** This tool is intended for legitimate automation and accessibility-related convenience where automated clicking is permitted. Do not use it to violate software terms, game rules, workplace policies, or applicable laws.
+> **Responsible use:** Automated clicking is for legitimate convenience and accessibility-related use where it is permitted. Do not use this tool to violate software terms, game rules, workplace policies, or applicable laws.
 
-## Features
+## Highlights
 
-- **Clear, keyboard-friendly UI:** card-based layout, labeled controls, menu bar, status badge (`RUNNING` / `STARTING` / `STOPPED`), live cursor readout, click/elapsed stats, and progress for fixed-count runs
-- **Click controls:** Left / Right / Middle button, Single or Double click, configurable interval (ms), and optional random jitter (± ms) with CPS estimate
-- **Repeat & timing:** run until stopped or for a fixed number of clicks, with optional start delay countdown
-- **Click location:** follow the current cursor or use a fixed X/Y screen position
-  - **Pick location (3s)** to capture the target
-  - **Use current cursor** to copy the live position instantly
-- **Control & safety:** configurable global hotkey (**F1–F12**, default **F6**) to start/stop, start confirmation summary, **Esc** to stop when focused, optional failsafe (move mouse to top-left corner `0,0` to stop), always-on-top, and **Click once (test)**
-- **Local settings:** preferences and window geometry are saved locally (per-user app data) and restored on next launch
-- **Privacy:** no telemetry, no network features, and no accounts
-- **Reliable input:** uses Windows `SendInput` (with fallback) for mouse events
+- **Modern, minimal UI:** clean card-based layout, clear typography, and system-aware light/dark styling with accent integration and best-effort Mica title bar on supported Windows 11 systems
+- **Clear control & feedback:** explicit `Stopped` / `Starting` / `Running` status, live click count and elapsed time, estimated rate, progress for fixed runs, and descriptive status messages
+- **Flexible clicking:** left/right/middle button, single or double click, interval in ms with optional random jitter (± ms), and a **Click once** test action
+- **Repeat & timing:** run until stopped or for a fixed number of clicks, with optional start-delay countdown
+- **Precise targeting:** follow the current cursor or click a fixed X/Y screen position, with **Pick point (3s)** and **Use cursor** capture
+- **Safety first:** start confirmation (optional), prominent stop controls, configurable global hotkey (default **F6**), **Esc** to stop when focused, and optional failsafe (move cursor to top-left `0,0` to stop instantly)
+- **Keyboard-friendly & accessible:** labeled controls, logical tab order, access keys, shortcuts, automation properties for UI Automation/screen readers, and Windows High Contrast theme support
+- **Private & local:** settings stored locally per user, no telemetry, no analytics, no ads, no accounts, and no network communication
 
 ## Requirements
 
-- Windows 10/11 (desktop)
-- Python 3.10+ with `tkinter` (included with standard Windows Python installs)
-- No third-party packages required
+- **Windows 10/11** (desktop)
+- **.NET 8 Desktop Runtime** to run a prebuilt app, or **.NET 8 SDK** to build from source
+
+No third-party runtime dependencies.
 
 ## Run
 
-From PowerShell in this folder:
+If you have a built executable:
+
+- Double-click **`Start ByJTT AutoClicker.cmd`** (launches the Release build if present), or run:
+  - `src\ByJTTAutoClicker\bin\Release\net8.0-windows\ByJTTAutoClicker.exe`
+
+## Build from source
 
 ```powershell
-py -3 .\autoclicker.py
-# or
-python .\autoclicker.py
+dotnet build src\ByJTTAutoClicker\ByJTTAutoClicker.csproj -c Release
 ```
 
-Run without a console window:
+The output executable is written to:
 
-```powershell
-pyw -3 .\autoclicker.py
-# or
-pythonw .\autoclicker.py
-```
-
-Or double-click `launch_autoclicker.bat`.
+`src\ByJTTAutoClicker\bin\Release\net8.0-windows\ByJTTAutoClicker.exe`
 
 ## Quick start
 
-1. Set **interval**, optional **jitter**, **mouse button**, and **click type**.
+1. Set **interval**, optional **jitter**, **button**, and **click type**.
 2. Choose **repeat until stopped** or a **fixed number of clicks**.
-3. Choose **follow cursor** or **fixed screen position** (use **Pick location (3s)** / **Use current cursor**).
-4. Optionally set **start delay**, **global hotkey**, **always on top**, and **failsafe**.
-5. Click **Start** (or press the global hotkey) and review the confirmation summary to begin. Stop with the hotkey, **Stop**, **Esc** (when focused), or the failsafe corner.
+3. Choose **follow cursor** or **fixed screen position** (use **Pick point (3s)** or **Use cursor**).
+4. Optionally set **start delay**, **global hotkey**, **failsafe**, and **start confirmation**.
+5. Press **Start** (or the global hotkey). Stop anytime with the hotkey, **Stop**, **Esc** (when focused), or the failsafe corner.
 
 ## Keyboard shortcuts
 
-- **Global hotkey** (default **F6**): start/stop clicking
+- **Global hotkey** (default **F6**, configurable F1–F12): start/stop clicking
+- **Alt+S**: start/stop
 - **Esc** (window focused): stop
 - **Ctrl+S**: save settings
-- **Alt+S**: start
-- **Alt+T**: stop
-- **F1**: show shortcuts
+- **F1**: show shortcuts & tips
 - **Tab / Shift+Tab**: move between controls
-- **Space / Enter**: activate focused controls
+- **Space / Enter**: activate focused control
 
-## Windows guidelines, accessibility, and compliance notes
-
-This is a **classic Win32 desktop utility** implemented with Python/tkinter (not a packaged WinUI 3/UWP/MSIX Microsoft Store app). It is designed to align with applicable Windows desktop app guidance and 2026 best practices where the toolkit and app model allow, including:
-
-- **Keyboard access:** keyboard-operable controls with logical tab order, menu/shortcuts, labeled inputs, and clear stop mechanisms (hotkey, Esc, Stop button)
-- **Clarity & feedback:** explicit status (`RUNNING`/`STARTING`/`STOPPED`) with text labels, start-confirmation summary, and descriptive status/error messages (state is not conveyed by color alone)
-- **Accessibility-minded UI:** visible labels, high-DPI awareness, readable typography/spacing, resizable/scrollable layout, and contrast-conscious colors
-- **Safety & user control:** confirmation before starting, prominent stop actions, optional failsafe (top-left corner), and no hidden/background automation beyond what the user starts
-- **Privacy & security:** local-only settings storage (per-user app data), no telemetry, no network communication, no accounts, and no collection/transmission of personal data
-
-**Important:** Because this project is not built with Windows App SDK/WinUI and is not submitted as a packaged Microsoft Store product, it cannot claim blanket certification against every Microsoft Store policy or every Windows app SDK-specific guideline. If you package or distribute it via the Microsoft Store, review the current [Microsoft Store Policies](https://learn.microsoft.com/en-us/windows/apps/publish/store-policies) (including 10.2 security/product safety) and perform full accessibility validation (keyboard-only, Narrator/screen reader, high contrast, and DPI/scaling) for your target environment.
-
-## Settings storage
+## Settings & privacy
 
 - Settings are stored locally at: `%APPDATA%\ByJTT\AutoClicker\settings.json`
-- A legacy `settings.json` next to the script is read for migration if present (local app data takes precedence once saved)
+- Legacy settings next to an older script-based build are migrated on first load when found
+- No telemetry, no analytics, no crash reporting, no accounts, and no network features are implemented
 
-## Files
+## Windows design & quality alignment
 
-- `autoclicker.py` — main application
-- `launch_autoclicker.bat` — Windows launcher
-- `README.md` — documentation
-- `LICENSE` — MIT license
-- `CONTRIBUTING.md` — contribution notes
-- `SECURITY.md` — security/responsible disclosure notes
-- `.gitignore` — excludes local/user-specific and build files (including `settings.json`)
+ByJTT AutoClicker is designed to align with applicable Microsoft Windows desktop design and quality guidance (as of 2026) for a classic (unpackaged) WPF app, including:
 
-## Development
+- **System integration:** Per-Monitor V2 DPI awareness, system fonts, light/dark mode and accent awareness, High Contrast support via system colors, and best-effort dark title bar/Mica backdrop on supported systems
+- **Accessibility:** keyboard-operable UI, visible labels and logical focus order, UI Automation names/help/live status for assistive technologies, and non-color-dependent status indication
+- **Safety & trust:** user-initiated actions, confirmation, multiple stop mechanisms/failsafe, standard user privileges (`asInvoker`), and local-only data handling
 
-1. Clone the repository.
-2. Run `py -3 autoclicker.py`.
-3. Syntax check: `py -3 -m py_compile autoclicker.py`
+**Scope note:** This repository contains a classic desktop app (not an MSIX-packaged WinUI 3/Windows App SDK Store app). It is not a substitute for formal certification. Store submission, packaging identity, and some policy requirements are distribution-specific; formal accessibility and security conformance depend on validation in your target environment. See [`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) for details and recommended validation steps.
+
+## Project structure
+
+- `src/ByJTTAutoClicker/` — WPF application source
+- `docs/COMPLIANCE.md` — Windows alignment and validation notes
+- `.github/workflows/build.yml` — CI build (Windows, .NET 8)
+- `Start ByJTT AutoClicker.cmd` — launcher for local builds
+- `legacy/` — earlier Python prototype (kept for reference)
+- `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Security
+
+See [SECURITY.md](SECURITY.md).
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) © 2026 ByJTT
