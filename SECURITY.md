@@ -15,11 +15,11 @@ Report it privately to the maintainer (for example, via a GitHub private securit
 - Affected version/commit and environment details (Windows version, .NET version)
 - Any suggested mitigation, if known
 
-I’ll aim to acknowledge reports and work toward a fix as soon as practical.
+I'll aim to acknowledge reports and work toward a fix as soon as practical.
 
 ## Scope notes
 
-ByJTT AutoClicker is a local Windows desktop utility that simulates mouse input at the user’s request.
+ByJTT AutoClicker is a local Windows desktop utility that simulates mouse input at the user's request.
 
 - **Local-only:** no network services, telemetry, analytics, accounts, or remote control features are implemented
 - **Privileges:** runs as a standard user (`asInvoker`); it does not require elevation

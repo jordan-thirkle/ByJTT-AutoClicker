@@ -89,13 +89,21 @@ public partial class App : Application
             _ = NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_USE_IMMERSIVE_DARK_MODE, ref useDark, sizeof(int));
             _ = NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ref useDark, sizeof(int));
 
-            // Best-effort Windows 11 system backdrop for a native, modern feel.
+            // Best-effort Windows 11 system integration for a native, modern feel.
+            var corner = NativeMethods.DWMWCP_ROUND;
+            _ = NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_WINDOW_CORNER_PREFERENCE, ref corner, sizeof(int));
+
             if (!highContrast)
             {
                 var backdrop = NativeMethods.DWMSBT_MAINWINDOW;
                 _ = NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_SYSTEMBACKDROP_TYPE, ref backdrop, sizeof(int));
                 var mica = 1;
                 _ = NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_MICA_EFFECT, ref mica, sizeof(int));
+            }
+            else
+            {
+                var backdrop = NativeMethods.DWMSBT_NONE;
+                _ = NativeMethods.DwmSetWindowAttribute(hwnd, NativeMethods.DWMWA_SYSTEMBACKDROP_TYPE, ref backdrop, sizeof(int));
             }
         }
         catch

@@ -1,25 +1,25 @@
 # Windows alignment & compliance notes
 
-**ByJTT AutoClicker** is a classic Win32 desktop application built with **WPF on .NET 8**. This document describes how the app is designed to align with applicable Microsoft Windows desktop guidance and quality standards (as of 2026), and what requires packaging-specific or manual validation.
+**ByJTT AutoClicker** (v4.2) is a classic Win32 desktop application built with **WPF on .NET 8**. This document describes how the app is designed to align with applicable Microsoft Windows desktop design and quality guidance (as of 2026), and what requires packaging-specific or manual validation.
 
-> **Important:** No single automated check can certify an app against *every* Microsoft guideline or policy. Store certification, formal accessibility conformance, and security sign-off depend on your target distribution, packaging, and validation in your environment. This project aims to follow applicable guidance in code and design, and to be transparent about scope and validation.
+> **Important:** No single source repository or automated check can certify an app against *every* Microsoft guideline, certification, or policy. Store certification, MSIX packaging/identity rules, formal accessibility conformance (e.g. WCAG/Section 508), and security/product-safety sign-off depend on your target distribution, packaging, and validation in your environment. This project aims to follow applicable guidance in code and design, and to be transparent about scope and limitations.
 
 ## App model and scope
 
 - **Type:** Classic desktop app (WPF, `net8.0-windows`, WinExe), not a packaged WinUI 3 / Windows App SDK / UWP app and not submitted to the Microsoft Store in this repository.
-- **Implication:** Windows App SDK-specific APIs, MSIX identity/packaging requirements, and Microsoft Store policy requirements are not all directly applicable as-is. Where relevant, this document notes what to do if you package for the Store (MSIX) or target those technologies.
+- **Implication:** Windows App SDK-specific APIs, MSIX identity/packaging/signing requirements, and Microsoft Store policy/certification requirements are not all directly applicable as-is. Where relevant, this document notes what to do if you package for the Store (MSIX) or target those technologies.
 
 ## Design & user experience (Fluent-aligned, desktop)
 
 - **Modern, minimal UI:** Clear visual hierarchy, card-based layout, consistent spacing/typography, rounded surfaces, and restrained color use for a calm, native feel.
-- **System integration:** Uses system fonts (Segoe UI Variable / Segoe UI), respects Windows light/dark app theme and accent color (where available), and applies best-effort dark title bar and Windows 11 backdrop (Mica) when supported. High Contrast mode uses system colors.
+- **System integration:** Uses system fonts (Segoe UI Variable / Segoe UI), respects Windows light/dark app theme and accent color (where available), and applies best-effort Windows 11 integration (dark/light title bar, Mica backdrop, and rounded window corners via DWM attributes) when supported. In High Contrast mode, system backdrop effects are not forced and system colors are used.
 - **Clarity:** Primary actions are prominent; status is explicit (`Stopped` / `Starting` / `Running`) with text labels and detail messages (state is not conveyed by color alone). Start confirmation summarizes the action before automation begins.
 - **DPI & rendering:** Per-Monitor V2 DPI awareness declared in the application manifest; layout uses device-independent units with `UseLayoutRounding`/`SnapsToDevicePixels` for crisp rendering.
 
 ## Accessibility (implemented practices)
 
 - **Keyboard access:** All functionality is operable by keyboard. Controls have logical tab order, visible labels, access keys/mnemonics, and standard activation (Tab/Shift+Tab, Space/Enter). Global hotkey (default F6) and in-app shortcuts (Esc to stop when focused, Ctrl+S save, Alt+S start/stop, F1 help) are provided.
-- **Assistive technology support:** UI elements expose names/help text and live status updates via WPF automation properties (`AutomationProperties.Name`, `HelpText`, `LiveSetting`, headings) to support UI Automation–based screen readers such as Narrator.
+- **Assistive technology support:** UI elements expose names/help text and live status updates via WPF automation properties (`AutomationProperties.Name`, `HelpText`, `LiveSetting`, headings) to support UI Automation-based screen readers such as Narrator.
 - **High Contrast:** When Windows High Contrast is enabled, the app applies a theme based on system colors (`SystemColors`) so user-selected contrast themes are honored.
 - **Visible focus & affordances:** Focus visuals are defined for interactive controls; buttons and inputs have clear labels and minimum target sizes appropriate for pointer and keyboard use.
 - **Motion/time:** Clicking cadence is user-controlled; an optional start-delay countdown provides preparation time. No decorative or flashing animations are used for critical information.
@@ -40,18 +40,18 @@
 
 ## Reliability & engineering
 
-- **Input method:** Uses Windows `SendInput` for mouse events (with robust handling in the engine).
+- **Input method:** Uses Windows `SendInput` for mouse events.
 - **Resilience:** Theme/system-preference updates and settings load/save are handled defensively so non-critical failures do not crash the app; unhandled UI exceptions are surfaced with a user-facing error dialog.
 - **Build:** Reproducible source build via `dotnet build` (see CI workflow). Versioning and application metadata are defined in the project file and manifest.
 
 ## Distribution notes (if you package for Microsoft Store / MSIX)
 
-If you intend to distribute via the Microsoft Store or as an MSIX package, review and validate against the **current** [Microsoft Store Policies](https://learn.microsoft.com/en-us/windows/apps/publish/store-policies) (including product safety, security, and responsible behavior) and Windows packaging/signing requirements. You should also:
+If you intend to distribute via the Microsoft Store or as an MSIX package, review and validate against the **current** [Microsoft Store Policies](https://learn.microsoft.com/en-us/windows/apps/publish/store-policies) (including product safety, security, and responsible behavior) and Windows packaging/signing/identity requirements. You should also:
 
-- Run full accessibility validation (Narrator, Accessibility Insights, keyboard-only, high contrast, contrast ratios, DPI).
+- Run full accessibility validation (Narrator, Accessibility Insights, keyboard-only, High Contrast, contrast ratios, DPI/scaling).
 - Perform security review appropriate for an input-automation tool and your target audience.
 - Test on supported Windows 10/11 versions and configurations you claim to support.
 
 ## Summary
 
-ByJTT AutoClicker is implemented to be a modern, minimal, accessible, privacy-respecting, and user-controlled Windows desktop utility that aligns with applicable Windows design and quality guidance for its app model. Items that cannot be “certified” purely from source (Store policy certification, formal accessibility conformance, environment-specific contrast/DPI/screen-reader validation) are identified above for manual verification.
+ByJTT AutoClicker is implemented to be a modern, minimal, accessible, privacy-respecting, and user-controlled Windows desktop utility that aligns with applicable Windows design and quality guidance for its app model. Items that cannot be "certified" from source alone (Store policy certification, MSIX/Store requirements, formal accessibility conformance, and environment-specific validation) are identified above for manual verification.

@@ -6,13 +6,13 @@ A modern, minimal Windows auto-clicker by **ByJTT** — built with **WPF on .NET
 
 ## Highlights
 
-- **Modern, minimal UI:** clean card-based layout, clear typography, and system-aware light/dark styling with accent integration and best-effort Mica title bar on supported Windows 11 systems
+- **Modern, minimal UI:** clean card-based layout, clear typography, and system-aware light/dark styling with accent integration, best-effort Windows 11 Mica/title-bar integration, and rounded corners on supported systems
 - **Clear control & feedback:** explicit `Stopped` / `Starting` / `Running` status, live click count and elapsed time, estimated rate, progress for fixed runs, and descriptive status messages
 - **Flexible clicking:** left/right/middle button, single or double click, interval in ms with optional random jitter (± ms), and a **Click once** test action
 - **Repeat & timing:** run until stopped or for a fixed number of clicks, with optional start-delay countdown
 - **Precise targeting:** follow the current cursor or click a fixed X/Y screen position, with **Pick point (3s)** and **Use cursor** capture
 - **Safety first:** start confirmation (optional), prominent stop controls, configurable global hotkey (default **F6**), **Esc** to stop when focused, and optional failsafe (move cursor to top-left `0,0` to stop instantly)
-- **Keyboard-friendly & accessible:** labeled controls, logical tab order, access keys, shortcuts, automation properties for UI Automation/screen readers, and Windows High Contrast theme support
+- **Keyboard-friendly & accessible:** labeled controls, logical tab order, access keys, shortcuts, UI Automation names/help/live status for assistive technologies, and Windows High Contrast theme support
 - **Private & local:** settings stored locally per user, no telemetry, no analytics, no ads, no accounts, and no network communication
 
 ## Requirements
@@ -65,13 +65,13 @@ The output executable is written to:
 
 ## Windows design & quality alignment
 
-ByJTT AutoClicker is designed to align with applicable Microsoft Windows desktop design and quality guidance (as of 2026) for a classic (unpackaged) WPF app, including:
+ByJTT AutoClicker is designed to align with applicable Microsoft Windows desktop design and quality guidance (as of 2026) for a **classic, unpackaged WPF** app, including:
 
-- **System integration:** Per-Monitor V2 DPI awareness, system fonts, light/dark mode and accent awareness, High Contrast support via system colors, and best-effort dark title bar/Mica backdrop on supported systems
+- **System integration:** Per-Monitor V2 DPI awareness, system fonts, light/dark mode and accent awareness, High Contrast support via system colors, and best-effort Windows 11 integration (dark title bar, Mica backdrop, and rounded corners where supported)
 - **Accessibility:** keyboard-operable UI, visible labels and logical focus order, UI Automation names/help/live status for assistive technologies, and non-color-dependent status indication
 - **Safety & trust:** user-initiated actions, confirmation, multiple stop mechanisms/failsafe, standard user privileges (`asInvoker`), and local-only data handling
 
-**Scope note:** This repository contains a classic desktop app (not an MSIX-packaged WinUI 3/Windows App SDK Store app). It is not a substitute for formal certification. Store submission, packaging identity, and some policy requirements are distribution-specific; formal accessibility and security conformance depend on validation in your target environment. See [`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) for details and recommended validation steps.
+**Scope note (important):** This repository is a classic desktop app (not an MSIX-packaged WinUI 3/Windows App SDK Microsoft Store app). It is **not** possible to guarantee or certify compliance with *every* Microsoft guideline, certification, or Store policy from source alone—especially those that are packaging/distribution-specific or require independent/manual validation. Store submission, MSIX identity/signing, formal accessibility conformance, and security/product-safety sign-off depend on your target distribution and testing in your environment. See [`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) for implemented practices and recommended validation steps.
 
 ## Project structure
 

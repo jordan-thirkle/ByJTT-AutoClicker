@@ -61,7 +61,7 @@
                             <TextBlock x:Name="StatusPillText" Text="Stopped" FontWeight="SemiBold" Foreground="{DynamicResource App.DangerFgBrush}"/>
                         </StackPanel>
                     </Border>
-                    <TextBlock Text="ByJTT  •  v4.1  •  Local &amp; private" Style="{StaticResource MutedText}" HorizontalAlignment="Right" Margin="0,8,0,0"/>
+                    <TextBlock Text="ByJTT  •  v4.2  •  Local &amp; private" Style="{StaticResource MutedText}" HorizontalAlignment="Right" Margin="0,8,0,0"/>
                 </StackPanel>
             </Grid>
         </Border>

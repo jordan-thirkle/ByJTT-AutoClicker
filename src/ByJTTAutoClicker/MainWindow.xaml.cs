@@ -650,7 +650,9 @@ public partial class MainWindow : Window
 
     private void ShowShortcutsHelp()
     {
-        const string text = "Keyboard shortcuts\n\n" +
+        const string text = "ByJTT AutoClicker v4.2\n" +
+                            "A modern, minimal Windows auto-clicker by ByJTT.\n\n" +
+                            "Keyboard shortcuts\n" +
                             "• Global hotkey (default F6): Start or stop clicking\n" +
                             "• Esc: Stop (when this window is focused)\n" +
                             "• Alt+S: Start or stop\n" +
@@ -661,8 +663,9 @@ public partial class MainWindow : Window
                             "Safety\n" +
                             "• Failsafe (recommended): move the mouse to the top-left corner (0,0) to stop instantly\n" +
                             "• Use “Click once” to test settings before starting\n\n" +
+                            "Privacy: settings are stored locally on this device. No telemetry, accounts, or network features.\n" +
                             "Use automated clicking only where it is permitted.";
-        MessageBox.Show(this, text, "Shortcuts & tips — ByJTT AutoClicker", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show(this, text, "About & shortcuts — ByJTT AutoClicker", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void ShowInfo(string title, string message, MessageBoxImage icon)
