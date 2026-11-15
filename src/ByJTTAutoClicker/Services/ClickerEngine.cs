@@ -39,7 +39,7 @@ public sealed class ClickerEngine
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
         State = config.StartDelaySeconds > 0 ? ClickerState.Starting : ClickerState.Running;
-        RaiseStatus(0, 0, config.StartDelaySeconds > 0 ? "Starting soon..." : "Running...");
+        RaiseStatus(0, 0, config.StartDelaySeconds > 0 ? "Starting soon…" : "Clicking now…");
         _worker = Task.Run(() => RunAsync(config, token));
         return true;
     }
@@ -50,10 +50,10 @@ public sealed class ClickerEngine
         _pendingStopReason = reason;
         _pendingStopMessage = message ?? reason switch
         {
-            StopReason.Completed => "Completed.",
-            StopReason.Failsafe => "Stopped by failsafe.",
-            StopReason.HotkeyConflict => "Stopped due to hotkey conflict.",
-            StopReason.Error => "Stopped due to an error.",
+            StopReason.Completed => "Finished.",
+            StopReason.Failsafe => "Stopped for safety because the mouse moved to the top-left corner of the screen.",
+            StopReason.HotkeyConflict => "Stopped because the stop/start key could not be used.",
+            StopReason.Error => "Stopped because something went wrong.",
             StopReason.Cancelled => "Cancelled.",
             _ => "Stopped."
         };
@@ -79,13 +79,13 @@ public sealed class ClickerEngine
                 {
                     token.ThrowIfCancellationRequested();
                     var show = remaining >= 10 ? remaining.ToString("0") : remaining.ToString("0.0");
-                    RaiseStatus(0, _elapsed.Elapsed.TotalSeconds, $"Starting in {show}s. Position your target.");
+                    RaiseStatus(0, _elapsed.Elapsed.TotalSeconds, $"Starting in {show} second(s). Get ready.");
                     var step = Math.Min(0.1, remaining);
                     await Task.Delay(TimeSpan.FromSeconds(step), token).ConfigureAwait(false);
                     remaining -= step;
                 }
                 State = ClickerState.Running;
-                RaiseStatus(0, _elapsed.Elapsed.TotalSeconds, "Running...");
+                RaiseStatus(0, _elapsed.Elapsed.TotalSeconds, "Clicking now…");
             }
 
             long clicks = 0;
@@ -97,27 +97,27 @@ public sealed class ClickerEngine
                 if (config.FailsafeEnabled && IsFailsafeTriggered())
                 {
                     _finalClicks = clicks;
-                    Complete(StopReason.Failsafe, "Failsafe triggered: mouse moved to the top-left corner (0,0).", clicks);
+                    Complete(StopReason.Failsafe, "Stopped for safety because the mouse moved to the top-left corner of the screen.", clicks);
                     return;
                 }
 
                 if (!PerformClick(config))
                 {
                     _finalClicks = clicks;
-                    Complete(StopReason.Error, "Could not send mouse input.", clicks);
+                    Complete(StopReason.Error, "Could not click. Your computer did not accept the mouse action.", clicks);
                     return;
                 }
 
                 clicks++;
                 _finalClicks = clicks;
                 var msg = config.RepeatMode == RepeatMode.Count
-                    ? $"Running... {Math.Max(0, target - clicks)} remaining."
-                    : "Running... use Stop, the hotkey, Esc, or failsafe to end.";
+                    ? $"Clicking now… {Math.Max(0, target - clicks):N0} click(s) left."
+                    : "Clicking now… Press Stop or your stop/start key to end.";
                 RaiseStatus(clicks, _elapsed.Elapsed.TotalSeconds, msg);
 
                 if (config.RepeatMode == RepeatMode.Count && clicks >= target)
                 {
-                    Complete(StopReason.Completed, $"Completed {clicks} click(s).", clicks);
+                    Complete(StopReason.Completed, $"Finished. Did {clicks:N0} click(s).", clicks);
                     return;
                 }
 
@@ -133,18 +133,17 @@ public sealed class ClickerEngine
             {
                 msg = reason == StopReason.User ? "Stopped." : "Cancelled.";
             }
-            // If a user explicitly stopped, keep it as a user stop (not "cancelled").
             if (reason == StopReason.User)
             {
-                msg = _pendingStopMessage == "Stopped." || string.IsNullOrWhiteSpace(_pendingStopMessage)
-                    ? $"Stopped. {_finalClicks} click(s) completed."
+                msg = string.Equals(_pendingStopMessage, "Stopped.", StringComparison.Ordinal) || string.IsNullOrWhiteSpace(_pendingStopMessage)
+                    ? (_finalClicks > 0 ? $"Stopped. {_finalClicks:N0} click(s) done." : "Stopped.")
                     : _pendingStopMessage;
             }
             Complete(reason, msg, _finalClicks);
         }
         catch
         {
-            Complete(StopReason.Error, "An unexpected error occurred while clicking.", _finalClicks);
+            Complete(StopReason.Error, "Something went wrong while clicking. Please try again.", _finalClicks);
         }
         finally
         {
@@ -161,7 +160,7 @@ public sealed class ClickerEngine
             if (failsafe && IsFailsafeTriggered())
             {
                 _pendingStopReason = StopReason.Failsafe;
-                _pendingStopMessage = "Failsafe triggered: mouse moved to the top-left corner (0,0).";
+                _pendingStopMessage = "Stopped for safety because the mouse moved to the top-left corner of the screen.";
                 throw new OperationCanceledException(token);
             }
             var remaining = seconds - sw.Elapsed.TotalSeconds;

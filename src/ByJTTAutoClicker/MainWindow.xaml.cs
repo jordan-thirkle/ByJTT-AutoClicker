@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -24,7 +23,10 @@ public partial class MainWindow : Window
     private AppSettings _settings = new();
     private bool _isPickingLocation;
     private bool _suppressHotkeyChange;
+    private bool _suppressPresetChange;
+    private bool _suppressUiEvents;
     private bool _loaded;
+    private StopReason? _lastStopReason;
 
     public ICommand StartCommand { get; }
     public ICommand StopCommand { get; }
@@ -67,7 +69,7 @@ public partial class MainWindow : Window
         }
         catch
         {
-            SetStatusDetail("Could not initialize global hotkey support.");
+            SetStatusDetail("Could not set up the global stop/start key. You can still use the buttons in this window.");
         }
     }
 
@@ -77,21 +79,36 @@ public partial class MainWindow : Window
         {
             PopulateHotkeys();
             _settings = _settingsService.Load();
+            _suppressUiEvents = true;
             ApplySettingsToUi(_settings);
+            _suppressUiEvents = false;
+
             ApplyAlwaysOnTop();
+            SyncSpeedPresetFromInterval();
             UpdateRateEstimate();
             UpdateModeStates();
-            UpdateStatus(new ClickerStatus(ClickerState.Stopped, 0, 0, 0, "Ready. Configure your settings, then press Start or use the hotkey."));
+            UpdatePlanSummary();
+            _lastStopReason = null;
+            UpdateStatus(new ClickerStatus(ClickerState.Stopped, 0, 0, 0,
+                "Ready. Choose your settings, then press Start clicking."));
+
+            IntervalBox.TextChanged += (_, _) => { if (_loaded && !_suppressUiEvents) { SyncSpeedPresetFromInterval(); UpdateRateEstimate(); UpdatePlanSummary(); } };
+            JitterBox.TextChanged += (_, _) => { if (_loaded && !_suppressUiEvents) { UpdateRateEstimate(); UpdatePlanSummary(); } };
+            DelayBox.TextChanged += (_, _) => { if (_loaded && !_suppressUiEvents) UpdatePlanSummary(); };
+            CountBox.TextChanged += (_, _) => { if (_loaded && !_suppressUiEvents) UpdatePlanSummary(); };
+            XBox.TextChanged += (_, _) => { if (_loaded && !_suppressUiEvents) UpdatePlanSummary(); };
+            YBox.TextChanged += (_, _) => { if (_loaded && !_suppressUiEvents) UpdatePlanSummary(); };
+            ButtonCombo.SelectionChanged += (_, _) => { if (_loaded && !_suppressUiEvents) UpdatePlanSummary(); };
+            ClickTypeCombo.SelectionChanged += (_, _) => { if (_loaded && !_suppressUiEvents) UpdatePlanSummary(); };
+
             _cursorTimer.Start();
             _loaded = true;
-            IntervalBox.TextChanged += (_, _) => UpdateRateEstimate();
-            JitterBox.TextChanged += (_, _) => UpdateRateEstimate();
-            // Re-apply theme in case window opened before system brush propagation
             (Application.Current as App)?.ApplyThemeSafe();
+            StartStopButton.Focus();
         }
         catch (Exception ex)
         {
-            SetStatusDetail("Could not load settings: " + ex.Message);
+            SetStatusDetail("Could not load your saved settings. Using simple defaults. (" + ex.Message + ")");
         }
     }
 
@@ -100,7 +117,7 @@ public partial class MainWindow : Window
         try
         {
             _cursorTimer.Stop();
-            if (_engine.IsBusy) _engine.Stop(StopReason.User, "Stopped (app closing).");
+            if (_engine.IsBusy) _engine.Stop(StopReason.User, "Stopped because the app was closed.");
             SaveSettings(showFeedback: false);
             _hotkeyService.Dispose();
             _hwndSource?.RemoveHook(WndProc);
@@ -222,19 +239,19 @@ public partial class MainWindow : Window
         error = null;
 
         if (!int.TryParse(IntervalBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var interval) || interval < 1 || interval > 3_600_000)
-        { error = "Enter an interval between 1 and 3,600,000 ms."; return false; }
+        { error = "Please enter a time between clicks from 1 to 3,600,000 ms (milliseconds)."; return false; }
         if (!int.TryParse(JitterBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var jitter) || jitter < 0 || jitter > 3_600_000)
-        { error = "Enter a jitter value between 0 and 3,600,000 ms."; return false; }
-        if (jitter > interval * 10) { error = "Jitter is too large compared to the interval."; return false; }
+        { error = "Please enter a random variation from 0 to 3,600,000 ms (or 0 for no variation)."; return false; }
+        if (jitter > interval * 10) { error = "Random variation is too large for this speed. Try a smaller number."; return false; }
         if (!double.TryParse(DelayBox.Text.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var delay) || delay < 0 || delay > 60)
-        { error = "Enter a start delay between 0 and 60 seconds."; return false; }
+        { error = "Please enter a start delay from 0 to 60 seconds."; return false; }
 
         var repeatMode = RepeatCountRadio.IsChecked == true ? RepeatMode.Count : RepeatMode.UntilStopped;
         var maxClicks = 0;
         if (repeatMode == RepeatMode.Count)
         {
             if (!int.TryParse(CountBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out maxClicks) || maxClicks < 1 || maxClicks > 100_000_000)
-            { error = "Enter a click count between 1 and 100,000,000."; return false; }
+            { error = "Please enter how many clicks to do (from 1 to 100,000,000)."; return false; }
         }
 
         var posMode = TargetFixedRadio.IsChecked == true ? PositionMode.Fixed : PositionMode.Cursor;
@@ -242,9 +259,9 @@ public partial class MainWindow : Window
         if (posMode == PositionMode.Fixed)
         {
             if (!int.TryParse(XBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out fx) || fx < -100_000 || fx > 100_000)
-            { error = "Enter a valid X coordinate (-100,000 to 100,000)."; return false; }
+            { error = "Please enter a valid Left/Right (X) position number."; return false; }
             if (!int.TryParse(YBox.Text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out fy) || fy < -100_000 || fy > 100_000)
-            { error = "Enter a valid Y coordinate (-100,000 to 100,000)."; return false; }
+            { error = "Please enter a valid Up/Down (Y) position number."; return false; }
         }
 
         config = new ClickConfiguration
@@ -276,14 +293,14 @@ public partial class MainWindow : Window
 
             if (_isPickingLocation)
             {
-                SetStatusDetail("Finish or wait for location picking before starting.");
+                SetStatusDetail("Please wait while I pick the spot on the screen, then try again.");
                 return;
             }
 
             if (!TryBuildConfig(out var config, out var error) || config is null)
             {
-                SetStatusDetail(error ?? "Invalid settings.");
-                ShowInfo("Check settings", error ?? "Invalid settings.", MessageBoxImage.Warning);
+                SetStatusDetail(error ?? "Please check your settings.");
+                ShowInfo("Check your settings", error ?? "Some settings need to be fixed before starting.", MessageBoxImage.Warning);
                 return;
             }
 
@@ -293,22 +310,23 @@ public partial class MainWindow : Window
                 var summary = DescribeConfig(config, hotkey);
                 var result = MessageBox.Show(this,
                     summary + "\n\nStart clicking now?",
-                    "Start auto-clicking",
+                    "Start clicking — ByJTT AutoClicker",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question,
                     MessageBoxResult.No);
                 if (result != MessageBoxResult.Yes)
                 {
-                    SetStatusDetail("Start cancelled.");
+                    SetStatusDetail("Start cancelled. Nothing was clicked.");
                     return;
                 }
             }
 
+            _lastStopReason = null;
             SaveSettings(showFeedback: false);
             if (!_engine.Start(config, out var startError))
             {
-                SetStatusDetail(startError ?? "Could not start.");
-                ShowInfo("Could not start", startError ?? "Could not start.", MessageBoxImage.Warning);
+                SetStatusDetail(startError ?? "Could not start clicking.");
+                ShowInfo("Could not start", startError ?? "Could not start clicking.", MessageBoxImage.Warning);
             }
             else
             {
@@ -317,23 +335,29 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            SetStatusDetail("Error: " + ex.Message);
+            SetStatusDetail("Something went wrong: " + ex.Message);
         }
     }
 
     private static string DescribeConfig(ClickConfiguration c, string hotkey)
     {
-        var where = c.PositionMode == PositionMode.Cursor ? "current cursor position" : $"fixed position ({c.FixedX}, {c.FixedY})";
-        var repeat = c.RepeatMode == RepeatMode.UntilStopped ? "until stopped" : $"{c.MaxClicks} click(s)";
-        var jitter = c.JitterMs > 0 ? $" ±{c.JitterMs} ms jitter" : "";
-        var delay = c.StartDelaySeconds > 0 ? $"\nStart delay: {c.StartDelaySeconds:0.##} s" : "";
-        var failsafe = c.FailsafeEnabled ? "On (top-left corner)" : "Off";
-        return $"Action: {c.ClickType} {c.Button.ToString().ToLowerInvariant()} click\n" +
-               $"Location: {where}\n" +
-               $"Interval: {c.IntervalMs} ms{jitter}\n" +
-               $"Repeat: {repeat}{delay}\n" +
-               $"Hotkey: {hotkey}\n" +
-               $"Failsafe: {failsafe}";
+        var clickName = c.ClickType == ClickType.Double ? "Double click" : "Single click";
+        var buttonName = c.Button switch { ClickButton.Right => "right mouse button", ClickButton.Middle => "middle mouse button", _ => "left mouse button" };
+        var where = c.PositionMode == PositionMode.Cursor ? "At your mouse pointer" : $"At a fixed spot on screen (X {c.FixedX}, Y {c.FixedY})";
+        var repeat = c.RepeatMode == RepeatMode.UntilStopped ? "Until you stop it" : $"{c.MaxClicks:N0} time(s), then stop";
+        var speed = c.JitterMs > 0
+            ? $"About every {c.IntervalMs} ms (with up to {c.JitterMs} ms variation)"
+            : $"About every {c.IntervalMs} ms";
+        var delay = c.StartDelaySeconds > 0 ? $"\n• Start delay: {c.StartDelaySeconds:0.##} second(s)" : "";
+        var failsafe = c.FailsafeEnabled ? "On (move mouse to top-left corner to stop)" : "Off";
+
+        return "Ready to start clicking:\n" +
+               $"• What: {clickName} with the {buttonName}\n" +
+               $"• Where: {where}\n" +
+               $"• Speed: {speed}\n" +
+               $"• How long: {repeat}{delay}\n" +
+               $"• Stop/start key: {hotkey}\n" +
+               $"• Safety stop: {failsafe}";
     }
 
     private void StopIfRunning()
@@ -343,13 +367,14 @@ public partial class MainWindow : Window
 
     private void OnStopped(StopReason reason, string message)
     {
+        _lastStopReason = reason;
         UpdateStatus(new ClickerStatus(ClickerState.Stopped, GetDisplayedClicks(), GetTargetClicks(), GetDisplayedElapsed(), message));
         UpdateModeStates();
         CommandManager.InvalidateRequerySuggested();
     }
 
-    private long GetDisplayedClicks() => long.TryParse(ClicksStatText.Text, out var v) ? v : 0;
-    private long GetTargetClicks() => RepeatCountRadio.IsChecked == true && int.TryParse(CountBox.Text, out var c) ? c : 0;
+    private long GetDisplayedClicks() => long.TryParse((ClicksStatText.Text ?? "0").Replace(",", "").Replace(" ", ""), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : 0;
+    private long GetTargetClicks() => RepeatCountRadio.IsChecked == true && int.TryParse((CountBox.Text ?? "").Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var c) ? c : 0;
     private double GetDisplayedElapsed()
     {
         var t = (ElapsedStatText.Text ?? "").Replace(" s", "", StringComparison.OrdinalIgnoreCase).Trim();
@@ -360,18 +385,41 @@ public partial class MainWindow : Window
     {
         try
         {
-            ClicksStatText.Text = status.ClicksCompleted.ToString(CultureInfo.InvariantCulture);
+            ClicksStatText.Text = status.ClicksCompleted.ToString("N0", CultureInfo.InvariantCulture);
             ElapsedStatText.Text = status.ElapsedSeconds.ToString("0.0", CultureInfo.InvariantCulture) + " s";
-            HotkeyStatText.Text = HotkeyCombo.SelectedItem?.ToString() ?? "F6";
+            var hotkey = HotkeyCombo.SelectedItem?.ToString() ?? "F6";
+            HotkeyStatText.Text = hotkey;
             StatusDetailText.Text = status.Message;
 
-            var stateText = status.State switch
+            string stateText;
+            string heroText;
+            if (status.State == ClickerState.Running)
             {
-                ClickerState.Running => "Running",
-                ClickerState.Starting => "Starting",
-                _ => "Stopped"
-            };
+                stateText = "Running";
+                heroText = "Clicking now";
+            }
+            else if (status.State == ClickerState.Starting)
+            {
+                stateText = "Starting";
+                heroText = "Starting soon…";
+            }
+            else
+            {
+                stateText = "Stopped";
+                heroText = _lastStopReason switch
+                {
+                    StopReason.Completed => "All done",
+                    StopReason.Failsafe => "Stopped for safety",
+                    StopReason.Error => "Stopped (problem)",
+                    StopReason.HotkeyConflict => "Stopped (key conflict)",
+                    StopReason.User => status.ClicksCompleted > 0 ? "Stopped" : "Ready to click",
+                    StopReason.Cancelled => "Ready to click",
+                    _ => status.ClicksCompleted > 0 ? "Stopped" : "Ready to click"
+                };
+            }
+
             StatusPillText.Text = stateText;
+            HeroStateText.Text = heroText;
             AutomationProperties.SetName(StatusPill, $"Status: {stateText}. {status.Message}");
 
             Brush? bg = null; Brush? fg = null;
@@ -407,21 +455,20 @@ public partial class MainWindow : Window
             else
             {
                 RunProgress.IsIndeterminate = status.State == ClickerState.Running;
-                if (status.State == ClickerState.Stopped) { RunProgress.IsIndeterminate = false; RunProgress.Value = 0; }
+                if (status.State != ClickerState.Running) { RunProgress.IsIndeterminate = false; RunProgress.Value = 0; }
             }
 
-            var hotkey = HotkeyCombo.SelectedItem?.ToString() ?? "F6";
             if (status.State == ClickerState.Stopped)
             {
-                StartStopButton.Content = $"_Start ({hotkey})";
+                StartStopButton.Content = $"_Start clicking ({hotkey})";
                 StartStopButton.Style = (Style)FindResource("PrimaryButton");
-                AutomationProperties.SetName(StartStopButton, "Start auto-clicking");
+                AutomationProperties.SetName(StartStopButton, "Start clicking");
             }
             else
             {
-                StartStopButton.Content = $"_Stop ({hotkey})";
+                StartStopButton.Content = $"_Stop clicking ({hotkey})";
                 StartStopButton.Style = (Style)FindResource("StopButton");
-                AutomationProperties.SetName(StartStopButton, "Stop auto-clicking");
+                AutomationProperties.SetName(StartStopButton, "Stop clicking");
             }
 
             UpdateModeStates();
@@ -438,30 +485,39 @@ public partial class MainWindow : Window
 
     private void UpdateModeStates()
     {
-        var busy = _engine.IsBusy || _isPickingLocation;
-        CountBox.IsEnabled = RepeatCountRadio.IsChecked == true && !_engine.IsBusy;
-        var isFixedTarget = TargetFixedRadio.IsChecked == true;
-        XBox.IsEnabled = isFixedTarget && !_engine.IsBusy;
-        YBox.IsEnabled = isFixedTarget && !_engine.IsBusy;
-        PickLocationButton.IsEnabled = isFixedTarget && !busy;
-        UseCurrentButton.IsEnabled = isFixedTarget && !busy;
+        var busy = _engine.IsBusy;
+        var interacting = busy || _isPickingLocation;
 
-        IntervalBox.IsEnabled = !_engine.IsBusy;
-        JitterBox.IsEnabled = !_engine.IsBusy;
-        DelayBox.IsEnabled = !_engine.IsBusy;
-        ButtonCombo.IsEnabled = !_engine.IsBusy;
-        ClickTypeCombo.IsEnabled = !_engine.IsBusy;
-        RepeatUntilStoppedRadio.IsEnabled = !_engine.IsBusy;
-        RepeatCountRadio.IsEnabled = !_engine.IsBusy;
-        TargetCursorRadio.IsEnabled = !_engine.IsBusy;
-        TargetFixedRadio.IsEnabled = !_engine.IsBusy;
-        HotkeyCombo.IsEnabled = !_engine.IsBusy;
-        FailsafeCheck.IsEnabled = !_engine.IsBusy;
-        ConfirmCheck.IsEnabled = !_engine.IsBusy;
+        var fixedTarget = TargetFixedRadio.IsChecked == true;
+        var countMode = RepeatCountRadio.IsChecked == true;
+
+        FixedTargetPanel.Visibility = fixedTarget ? Visibility.Visible : Visibility.Collapsed;
+        CountPanel.Visibility = countMode ? Visibility.Visible : Visibility.Collapsed;
+
+        CountBox.IsEnabled = countMode && !busy;
+        XBox.IsEnabled = fixedTarget && !busy;
+        YBox.IsEnabled = fixedTarget && !busy;
+        PickLocationButton.IsEnabled = fixedTarget && !interacting;
+        UseCurrentButton.IsEnabled = fixedTarget && !interacting;
+
+        IntervalBox.IsEnabled = !busy;
+        JitterBox.IsEnabled = !busy;
+        DelayBox.IsEnabled = !busy;
+        ButtonCombo.IsEnabled = !busy;
+        ClickTypeCombo.IsEnabled = !busy;
+        SpeedPresetCombo.IsEnabled = !busy;
+        RepeatUntilStoppedRadio.IsEnabled = !busy;
+        RepeatCountRadio.IsEnabled = !busy;
+        TargetCursorRadio.IsEnabled = !busy;
+        TargetFixedRadio.IsEnabled = !busy;
+        HotkeyCombo.IsEnabled = !busy;
+        FailsafeCheck.IsEnabled = !busy;
+        ConfirmCheck.IsEnabled = !busy;
         AlwaysOnTopCheck.IsEnabled = true;
-        TestClickButton.IsEnabled = !_engine.IsBusy && !_isPickingLocation;
-        ResetButton.IsEnabled = !_engine.IsBusy && !_isPickingLocation;
-        SaveButton.IsEnabled = !_engine.IsBusy;
+
+        TestClickButton.IsEnabled = !interacting;
+        ResetButton.IsEnabled = !interacting;
+        SaveButton.IsEnabled = !busy;
     }
 
     private void UpdateCursorLabel()
@@ -469,46 +525,129 @@ public partial class MainWindow : Window
         try
         {
             if (ClickerEngine.GetCursorPosition(out var x, out var y))
-                CursorPositionText.Text = $"Cursor: {x}, {y}";
+                CursorPositionText.Text = $"Mouse pointer now: X {x}, Y {y}";
             else
-                CursorPositionText.Text = "Cursor: unavailable";
+                CursorPositionText.Text = "Mouse pointer now: unavailable";
         }
-        catch { CursorPositionText.Text = "Cursor: unavailable"; }
+        catch { CursorPositionText.Text = "Mouse pointer now: unavailable"; }
     }
 
     private void UpdateRateEstimate()
     {
         try
         {
-            if (!int.TryParse(IntervalBox.Text.Trim(), out var interval) || interval <= 0)
-            { RateText.Text = "—"; return; }
-            _ = int.TryParse(JitterBox.Text.Trim(), out var jitter);
+            if (!int.TryParse((IntervalBox.Text ?? "").Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var interval) || interval <= 0)
+            { RateText.Text = "Enter a valid time between clicks to see the speed."; return; }
+            _ = int.TryParse((JitterBox.Text ?? "").Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var jitter);
             if (jitter < 0) jitter = 0;
+
             if (jitter <= 0)
             {
                 var cps = 1000.0 / interval;
-                RateText.Text = $"~{cps:0.##} /s";
+                RateText.Text = $"About {FormatRate(cps)} click(s) every second";
             }
             else
             {
                 var minInterval = Math.Max(1, interval - jitter);
                 var maxInterval = interval + jitter;
-                RateText.Text = $"~{1000.0 / maxInterval:0.##}–{1000.0 / minInterval:0.##} /s";
+                var fast = 1000.0 / minInterval;
+                var slow = 1000.0 / maxInterval;
+                RateText.Text = $"About {FormatRate(slow)} to {FormatRate(fast)} click(s) every second";
             }
         }
         catch { RateText.Text = ""; }
+    }
+
+    private static string FormatRate(double cps)
+    {
+        if (double.IsNaN(cps) || double.IsInfinity(cps)) return "—";
+        if (Math.Abs(cps - Math.Round(cps)) < 0.05) return Math.Round(cps).ToString("0", CultureInfo.InvariantCulture);
+        return cps.ToString("0.#", CultureInfo.InvariantCulture);
+    }
+
+    private void UpdatePlanSummary()
+    {
+        try
+        {
+            var button = GetComboText(ButtonCombo);
+            var clickType = GetComboText(ClickTypeCombo);
+            var clickDesc = string.Equals(clickType, "Double", StringComparison.OrdinalIgnoreCase)
+                ? $"Double {button.ToLowerInvariant()} click"
+                : $"{button} click";
+
+            var interval = ParseIntOr(IntervalBox.Text, 100);
+            var where = TargetFixedRadio.IsChecked == true
+                ? $"at one fixed spot (X {ParseIntOr(XBox.Text, 0)}, Y {ParseIntOr(YBox.Text, 0)})"
+                : "at your mouse pointer";
+            var howLong = RepeatCountRadio.IsChecked == true
+                ? $"{ParseIntOr(CountBox.Text, 100):N0} time(s)"
+                : "until you stop";
+
+            PlanSummaryText.Text = $"{clickDesc} every {interval:N0} ms {where}, {howLong}.";
+        }
+        catch { PlanSummaryText.Text = ""; }
+    }
+
+    private void SyncSpeedPresetFromInterval()
+    {
+        if (SpeedPresetCombo == null) return;
+        var interval = ParseIntOr(IntervalBox.Text, -1);
+        string targetTag = "custom";
+        if (interval == 1000) targetTag = "1000";
+        else if (interval == 500) targetTag = "500";
+        else if (interval == 200) targetTag = "200";
+        else if (interval == 100) targetTag = "100";
+        else if (interval == 50) targetTag = "50";
+
+        _suppressPresetChange = true;
+        try
+        {
+            foreach (var item in SpeedPresetCombo.Items)
+            {
+                if (item is ComboBoxItem cbi && string.Equals(cbi.Tag?.ToString(), targetTag, StringComparison.OrdinalIgnoreCase))
+                {
+                    SpeedPresetCombo.SelectedItem = cbi;
+                    return;
+                }
+            }
+            // fallback to Custom
+            foreach (var item in SpeedPresetCombo.Items)
+            {
+                if (item is ComboBoxItem cbi && string.Equals(cbi.Tag?.ToString(), "custom", StringComparison.OrdinalIgnoreCase))
+                { SpeedPresetCombo.SelectedItem = cbi; return; }
+            }
+        }
+        finally { _suppressPresetChange = false; }
+    }
+
+    private void SpeedPresetCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressPresetChange || !_loaded) return;
+        if (SpeedPresetCombo.SelectedItem is not ComboBoxItem cbi) return;
+        var tag = cbi.Tag?.ToString();
+        if (string.IsNullOrWhiteSpace(tag) || string.Equals(tag, "custom", StringComparison.OrdinalIgnoreCase)) return;
+        if (int.TryParse(tag, NumberStyles.Integer, CultureInfo.InvariantCulture, out var ms))
+        {
+            _suppressUiEvents = true;
+            IntervalBox.Text = ms.ToString(CultureInfo.InvariantCulture);
+            _suppressUiEvents = false;
+            UpdateRateEstimate();
+            UpdatePlanSummary();
+        }
     }
 
     private void RepeatModeChanged(object sender, RoutedEventArgs e)
     {
         if (!IsLoaded) return;
         UpdateModeStates();
+        UpdatePlanSummary();
     }
 
     private void TargetModeChanged(object sender, RoutedEventArgs e)
     {
         if (!IsLoaded) return;
         UpdateModeStates();
+        UpdatePlanSummary();
     }
 
     private void AlwaysOnTopChanged(object sender, RoutedEventArgs e)
@@ -527,7 +666,11 @@ public partial class MainWindow : Window
         ApplyHotkeyFromUi(showErrors: true);
         var hk = HotkeyCombo.SelectedItem?.ToString() ?? "F6";
         HotkeyStatText.Text = hk;
-        if (!_engine.IsBusy) StartStopButton.Content = $"_Start ({hk})";
+        if (!_engine.IsBusy)
+        {
+            StartStopButton.Content = $"_Start clicking ({hk})";
+            UpdatePlanSummary();
+        }
     }
 
     private void ApplyHotkeyFromUi(bool showErrors)
@@ -537,12 +680,13 @@ public partial class MainWindow : Window
         {
             if (showErrors && !string.IsNullOrWhiteSpace(error))
             {
-                SetStatusDetail(error);
+                SetStatusDetail(error + " You can still start and stop with the buttons in this window.");
             }
         }
         else
         {
-            if (_loaded && !_engine.IsBusy) SetStatusDetail($"Global hotkey set to {hk}.");
+            if (_loaded && !_engine.IsBusy)
+                SetStatusDetail($"Stop/start key set to {hk}. You can press it from anywhere to start or stop.");
         }
     }
 
@@ -551,15 +695,20 @@ public partial class MainWindow : Window
         if (_engine.IsBusy || _isPickingLocation) return;
         if (!TryBuildConfig(out var config, out var error) || config is null)
         {
-            SetStatusDetail(error ?? "Invalid settings.");
-            ShowInfo("Check settings", error ?? "Invalid settings.", MessageBoxImage.Warning);
+            SetStatusDetail(error ?? "Please check your settings.");
+            ShowInfo("Check your settings", error ?? "Some settings need to be fixed before trying a click.", MessageBoxImage.Warning);
             return;
         }
         try
         {
             var ok = ClickerEngine.PerformSingleTestClick(config);
-            SetStatusDetail(ok ? "Performed 1 test click with the current settings." : "Could not perform the test click.");
-            if (!ok) ShowInfo("Test click", "Could not perform the test click. Check permissions and settings.", MessageBoxImage.Warning);
+            if (ok)
+                SetStatusDetail("Did 1 test click using your current settings.");
+            else
+            {
+                SetStatusDetail("The test click did not work. Please check your settings and try again.");
+                ShowInfo("Test click", "Could not do the test click. If another app is blocking input, try running as usual (no special permissions are required).", MessageBoxImage.Warning);
+            }
         }
         catch (Exception ex)
         {
@@ -577,28 +726,29 @@ public partial class MainWindow : Window
         {
             for (var i = 3; i >= 1; i--)
             {
-                SetStatusDetail($"Move cursor to the target... capturing in {i}s");
+                SetStatusDetail($"Move your mouse to the spot you want, then hold still. Picking in {i}…");
                 await Task.Delay(1000);
             }
             if (ClickerEngine.GetCursorPosition(out var x, out var y))
             {
                 XBox.Text = x.ToString(CultureInfo.InvariantCulture);
                 YBox.Text = y.ToString(CultureInfo.InvariantCulture);
-                SetStatusDetail($"Captured fixed position: {x}, {y}");
+                SetStatusDetail($"Got it. I’ll click at X {x}, Y {y}.");
             }
             else
             {
-                SetStatusDetail("Could not capture the cursor position.");
+                SetStatusDetail("Could not read the mouse position. Please try again.");
             }
         }
         catch (Exception ex)
         {
-            SetStatusDetail("Could not pick location: " + ex.Message);
+            SetStatusDetail("Could not pick a spot: " + ex.Message);
         }
         finally
         {
             _isPickingLocation = false;
             UpdateModeStates();
+            UpdatePlanSummary();
         }
     }
 
@@ -610,12 +760,13 @@ public partial class MainWindow : Window
             TargetFixedRadio.IsChecked = true;
             XBox.Text = x.ToString(CultureInfo.InvariantCulture);
             YBox.Text = y.ToString(CultureInfo.InvariantCulture);
-            SetStatusDetail($"Fixed position set to current cursor: {x}, {y}");
+            SetStatusDetail($"I’ll click at your current mouse position: X {x}, Y {y}.");
             UpdateModeStates();
+            UpdatePlanSummary();
         }
         else
         {
-            SetStatusDetail("Could not read the cursor position.");
+            SetStatusDetail("Could not read the mouse position.");
         }
     }
 
@@ -628,7 +779,7 @@ public partial class MainWindow : Window
             var s = CollectSettingsFromUi();
             _settings = s;
             _settingsService.Save(s);
-            if (showFeedback) SetStatusDetail("Settings saved.");
+            if (showFeedback) SetStatusDetail("Settings saved on this device.");
         }
         catch (Exception ex)
         {
@@ -640,32 +791,42 @@ public partial class MainWindow : Window
     {
         if (_engine.IsBusy || _isPickingLocation) return;
         var defaults = SettingsService.Normalize(new AppSettings());
+        _suppressUiEvents = true;
         ApplySettingsToUi(defaults);
+        _suppressUiEvents = false;
         ApplyAlwaysOnTop();
+        ApplyHotkeyFromUi(showErrors: false);
+        SyncSpeedPresetFromInterval();
         UpdateRateEstimate();
         UpdateModeStates();
-        ApplyHotkeyFromUi(showErrors: false);
-        SetStatusDetail("Default settings restored.");
+        UpdatePlanSummary();
+        SetStatusDetail("Back to simple defaults.");
     }
+
+    private void Help_Click(object sender, RoutedEventArgs e) => ShowShortcutsHelp();
 
     private void ShowShortcutsHelp()
     {
-        const string text = "ByJTT AutoClicker v4.2.1\n" +
-                            "A modern, minimal Windows auto-clicker by ByJTT.\n\n" +
+        const string text = "ByJTT AutoClicker v4.3.0\n\n" +
+                            "A simple, modern auto-clicker for Windows — made to be easy for everyone.\n\n" +
+                            "How to use\n" +
+                            "1. Choose how fast to click and where to click.\n" +
+                            "2. Press “Start clicking” (or your stop/start key).\n" +
+                            "3. To stop, press the stop/start key, press Esc in this window, click Stop, or move your mouse to the top-left corner of the screen (if safety stop is on).\n\n" +
                             "Keyboard shortcuts\n" +
-                            "• Global hotkey (default F6): Start or stop clicking\n" +
-                            "• Esc: Stop (when this window is focused)\n" +
+                            "• Stop/start key (default F6): Start or stop from anywhere\n" +
+                            "• Esc: Stop (when this window is selected)\n" +
                             "• Alt+S: Start or stop\n" +
                             "• Ctrl+S: Save settings\n" +
                             "• F1: Show this help\n" +
                             "• Tab / Shift+Tab: Move between controls\n" +
-                            "• Space / Enter: Activate the focused control\n\n" +
-                            "Safety\n" +
-                            "• Failsafe (recommended): move the mouse to the top-left corner (0,0) to stop instantly\n" +
-                            "• Use “Click once” to test settings before starting\n\n" +
-                            "Privacy: settings are stored locally on this device. No telemetry, accounts, or network features.\n" +
-                            "Use automated clicking only where it is permitted.";
-        MessageBox.Show(this, text, "About & shortcuts — ByJTT AutoClicker", MessageBoxButton.OK, MessageBoxImage.Information);
+                            "• Space / Enter: Use the selected control\n\n" +
+                            "Safety & privacy\n" +
+                            "• Safety stop (recommended): move the mouse to the very top-left corner (0,0) to stop instantly.\n" +
+                            "• “Try one click” lets you test safely before starting.\n" +
+                            "• Settings stay on this device only. No accounts, no ads, no internet connection.\n\n" +
+                            "Use automated clicking only where it is allowed and appropriate.";
+        MessageBox.Show(this, text, "Help & shortcuts — ByJTT AutoClicker", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private void ShowInfo(string title, string message, MessageBoxImage icon)

@@ -1,6 +1,6 @@
 # Windows alignment & compliance notes
 
-**ByJTT AutoClicker** (v4.2.1) is a classic Win32 desktop application built with **WPF on .NET 8**. This document describes how the app is designed to align with applicable Microsoft Windows desktop design and quality guidance (as of 2026), and what requires packaging-specific or manual validation.
+**ByJTT AutoClicker** (v4.3.0) is a classic Win32 desktop application built with **WPF on .NET 8**. This document describes how the app is designed to align with applicable Microsoft Windows desktop design and quality guidance (as of 2026), and what requires packaging-specific or manual validation.
 
 > **Important:** No single source repository or automated check can certify an app against *every* Microsoft guideline, certification, or policy. Store certification, MSIX packaging/identity rules, formal accessibility conformance (e.g. WCAG/Section 508), and security/product-safety sign-off depend on your target distribution, packaging, and validation in your environment. This project aims to follow applicable guidance in code and design, and to be transparent about scope and limitations.
 
@@ -12,9 +12,12 @@
 ## Design & user experience (Fluent-aligned, desktop)
 
 - **Modern, minimal UI:** Clear visual hierarchy, card-based layout, consistent spacing/typography, rounded surfaces, and restrained color use for a calm, native feel.
+- **Easy-to-use structure (progressive disclosure):** The primary flow is simplified into a few plain-language choices (speed, where to click, how long) with a live plan summary and one prominent start/stop action. Advanced/less-common options are grouped under “More options” so beginners are not overwhelmed while experienced users retain control.
+- **Inclusive, plain language:** Labels and messages avoid jargon where possible (e.g. “Stop/start key”, “Try one click”, “Safety stop”), explain outcomes clearly, and provide helpful feedback for errors and state changes.
 - **System integration:** Uses system fonts (Segoe UI Variable / Segoe UI), respects Windows light/dark app theme and accent color (where available), and applies best-effort Windows 11 integration (dark/light title bar, Mica backdrop, and rounded window corners via DWM attributes) when supported. In High Contrast mode, system backdrop effects are not forced and system colors are used.
-- **Clarity:** Primary actions are prominent; status is explicit (`Stopped` / `Starting` / `Running`) with text labels and detail messages (state is not conveyed by color alone). Start confirmation summarizes the action before automation begins.
+- **Clarity:** Primary actions are prominent; status is explicit (`Stopped` / `Starting` / `Running`) with text labels and descriptive messages (state is not conveyed by color alone). A confirmation summary describes the action before automation begins.
 - **DPI & rendering:** Per-Monitor V2 DPI awareness declared in the application manifest; layout uses device-independent units with `UseLayoutRounding`/`SnapsToDevicePixels` for crisp rendering.
+- **Comfortable targets & readability:** Controls use larger default sizing/padding and readable text to support pointer, touch-like interaction, and users with varied motor or visual needs (within the limits of a desktop utility). Manual validation across scales/themes is still required.
 
 ## Accessibility (implemented practices)
 

@@ -5,23 +5,23 @@
              ShutdownMode="OnMainWindowClose">
     <Application.Resources>
         <!-- Theme brushes (updated at runtime by ThemeService) -->
-        <SolidColorBrush x:Key="App.BackgroundBrush" Color="#F3F3F3"/>
+        <SolidColorBrush x:Key="App.BackgroundBrush" Color="#F4F5F7"/>
         <SolidColorBrush x:Key="App.SurfaceBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="App.SurfaceAltBrush" Color="#FAFAFA"/>
-        <SolidColorBrush x:Key="App.BorderBrush" Color="#DDDDDD"/>
-        <SolidColorBrush x:Key="App.TextBrush" Color="#1A1A1A"/>
-        <SolidColorBrush x:Key="App.TextMutedBrush" Color="#5C5C5C"/>
-        <SolidColorBrush x:Key="App.SubtleBrush" Color="#F7F7F7"/>
-        <SolidColorBrush x:Key="App.AccentBrush" Color="#005FB8"/>
-        <SolidColorBrush x:Key="App.AccentMutedBrush" Color="#D6E6F7"/>
+        <SolidColorBrush x:Key="App.SurfaceAltBrush" Color="#F8F9FB"/>
+        <SolidColorBrush x:Key="App.BorderBrush" Color="#E3E6EA"/>
+        <SolidColorBrush x:Key="App.TextBrush" Color="#1B1D20"/>
+        <SolidColorBrush x:Key="App.TextMutedBrush" Color="#5E6673"/>
+        <SolidColorBrush x:Key="App.SubtleBrush" Color="#F1F3F6"/>
+        <SolidColorBrush x:Key="App.AccentBrush" Color="#0067C0"/>
+        <SolidColorBrush x:Key="App.AccentMutedBrush" Color="#DCEBFA"/>
         <SolidColorBrush x:Key="App.OnAccentBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="App.SuccessBgBrush" Color="#DFF6E8"/>
+        <SolidColorBrush x:Key="App.SuccessBgBrush" Color="#E7F6EC"/>
         <SolidColorBrush x:Key="App.SuccessFgBrush" Color="#0F5C2E"/>
-        <SolidColorBrush x:Key="App.DangerBgBrush" Color="#FDE7E9"/>
+        <SolidColorBrush x:Key="App.DangerBgBrush" Color="#FDEBEC"/>
         <SolidColorBrush x:Key="App.DangerFgBrush" Color="#8A1C1C"/>
-        <SolidColorBrush x:Key="App.WarnBgBrush" Color="#FFF4CE"/>
+        <SolidColorBrush x:Key="App.WarnBgBrush" Color="#FFF4D6"/>
         <SolidColorBrush x:Key="App.WarnFgBrush" Color="#6B4F00"/>
-        <SolidColorBrush x:Key="App.FocusBrush" Color="#005FB8"/>
+        <SolidColorBrush x:Key="App.FocusBrush" Color="#0067C0"/>
         <sys:Boolean x:Key="App.IsDark">False</sys:Boolean>
         <sys:Boolean x:Key="App.IsHighContrast">False</sys:Boolean>
 
@@ -29,7 +29,7 @@
 
         <Style TargetType="{x:Type Window}">
             <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, sans-serif"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
             <Setter Property="Background" Value="{DynamicResource App.BackgroundBrush}"/>
             <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
@@ -44,39 +44,39 @@
         </Style>
 
         <Style x:Key="TitleText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="28"/>
+            <Setter Property="FontSize" Value="30"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
         </Style>
         <Style x:Key="SubtitleText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{DynamicResource App.TextMutedBrush}"/>
         </Style>
         <Style x:Key="SectionTitleText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
         <Style x:Key="MutedText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource App.TextMutedBrush}"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="13"/>
         </Style>
         <Style x:Key="IconText" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets, Segoe UI Symbol"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="16"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="{DynamicResource App.TextMutedBrush}"/>
         </Style>
         <Style x:Key="FieldLabel" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
         </Style>
         <Style x:Key="FieldLabelControl" TargetType="Label">
             <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
             <Setter Property="IsTabStop" Value="False"/>
         </Style>
 
@@ -84,7 +84,7 @@
             <Setter Property="Control.Template">
                 <Setter.Value>
                     <ControlTemplate>
-                        <Rectangle Margin="-3" RadiusX="7" RadiusY="7"
+                        <Rectangle Margin="-3" RadiusX="8" RadiusY="8"
                                    Stroke="{DynamicResource App.FocusBrush}"
                                    StrokeThickness="2" SnapsToDevicePixels="True"/>
                     </ControlTemplate>
@@ -96,18 +96,19 @@
             <Setter Property="Background" Value="{DynamicResource App.SurfaceBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource App.BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="18"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="20"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
         </Style>
 
         <Style TargetType="{x:Type TextBox}">
             <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource App.TextBrush}"/>
             <Setter Property="Background" Value="{DynamicResource App.SurfaceAltBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource App.BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="MinHeight" Value="40"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisual}"/>
             <Setter Property="ToolTipService.ShowDuration" Value="15000"/>
@@ -123,23 +124,23 @@
             <Setter Property="Background" Value="{DynamicResource App.SurfaceAltBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource App.BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="MinHeight" Value="36"/>
-            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="Padding" Value="10,6"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisual}"/>
             <Setter Property="ToolTipService.ShowDuration" Value="15000"/>
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
                     <Setter Property="Foreground" Value="{DynamicResource App.TextMutedBrush}"/>
-                    <Setter Property="Opacity" Value="0.75"/>
+                    <Setter Property="Opacity" Value="0.7"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
         <Style TargetType="{x:Type ComboBoxItem}">
             <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="MinHeight" Value="36"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -181,13 +182,17 @@
         </Style>
         <Style TargetType="{x:Type CheckBox}">
             <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
-            <Setter Property="Margin" Value="0,3"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="MinHeight" Value="32"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisual}"/>
         </Style>
         <Style TargetType="{x:Type RadioButton}">
             <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
-            <Setter Property="Margin" Value="0,3"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="MinHeight" Value="32"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisual}"/>
         </Style>
@@ -197,9 +202,9 @@
             <Setter Property="Background" Value="{DynamicResource App.SurfaceAltBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource App.BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="14,8"/>
-            <Setter Property="MinHeight" Value="38"/>
-            <Setter Property="MinWidth" Value="84"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="MinWidth" Value="88"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisual}"/>
             <Setter Property="Template">
@@ -208,7 +213,7 @@
                         <Border x:Name="Bd" Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="9" SnapsToDevicePixels="True">
+                                CornerRadius="10" SnapsToDevicePixels="True">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                               Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"/>
                         </Border>
@@ -217,7 +222,7 @@
                                 <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource App.AccentBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Bd" Property="Opacity" Value="0.85"/>
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.88"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="Bd" Property="Opacity" Value="0.45"/>
@@ -234,8 +239,9 @@
             <Setter Property="Foreground" Value="{DynamicResource App.OnAccentBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource App.AccentBrush}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="MinHeight" Value="48"/>
-            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="MinHeight" Value="52"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="20,12"/>
         </Style>
 
         <Style x:Key="StopButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
@@ -243,17 +249,18 @@
             <Setter Property="Foreground" Value="{DynamicResource App.DangerFgBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource App.DangerFgBrush}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="MinHeight" Value="48"/>
-            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="MinHeight" Value="52"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Padding" Value="20,12"/>
         </Style>
 
         <Style x:Key="SubtleButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderBrush" Value="{DynamicResource App.BorderBrush}"/>
-            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Padding" Value="12,8"/>
             <Setter Property="MinWidth" Value="0"/>
-            <Setter Property="MinHeight" Value="32"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="FontSize" Value="13"/>
         </Style>
 
         <Style TargetType="{x:Type ProgressBar}">
@@ -263,16 +270,24 @@
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
 
+        <Style TargetType="{x:Type Expander}">
+            <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource App.BorderBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="IsTabStop" Value="False"/>
+        </Style>
+
         <Style TargetType="{x:Type ToolTip}">
             <Setter Property="Background" Value="{DynamicResource App.SurfaceBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource App.BorderBrush}"/>
-            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="13"/>
         </Style>
 
         <Style x:Key="StatusPillBorder" TargetType="Border">
-            <Setter Property="CornerRadius" Value="14"/>
-            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="14,6"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
         </Style>
