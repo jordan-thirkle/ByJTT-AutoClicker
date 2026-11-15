@@ -650,7 +650,7 @@ public partial class MainWindow : Window
 
     private void ShowShortcutsHelp()
     {
-        const string text = "ByJTT AutoClicker v4.2\n" +
+        const string text = "ByJTT AutoClicker v4.2.1\n" +
                             "A modern, minimal Windows auto-clicker by ByJTT.\n\n" +
                             "Keyboard shortcuts\n" +
                             "• Global hotkey (default F6): Start or stop clicking\n" +

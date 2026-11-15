@@ -104,6 +104,36 @@ public sealed class ThemeService
         SetBrush(resources, "App.FocusBrush", accent);
         resources["App.IsDark"] = IsAppsDarkMode();
         resources["App.IsHighContrast"] = hc;
+
+        // Keep default/system-templated controls (e.g. ComboBox popup) consistent with app theme.
+        SyncSystemColorResources(resources, hc);
+    }
+
+    private static void SyncSystemColorResources(ResourceDictionary resources, bool highContrast)
+    {
+        if (highContrast)
+        {
+            // Honor the user's selected High Contrast system colors.
+            return;
+        }
+
+        Brush Get(string key) => (Brush)resources[key];
+        resources[SystemColors.WindowBrushKey] = Get("App.SurfaceBrush");
+        resources[SystemColors.WindowTextBrushKey] = Get("App.TextBrush");
+        resources[SystemColors.ControlBrushKey] = Get("App.SurfaceAltBrush");
+        resources[SystemColors.ControlTextBrushKey] = Get("App.TextBrush");
+        resources[SystemColors.ControlLightLightBrushKey] = Get("App.SurfaceBrush");
+        resources[SystemColors.ControlLightBrushKey] = Get("App.SurfaceAltBrush");
+        resources[SystemColors.ControlDarkBrushKey] = Get("App.BorderBrush");
+        resources[SystemColors.HighlightBrushKey] = Get("App.AccentBrush");
+        resources[SystemColors.HighlightTextBrushKey] = Get("App.OnAccentBrush");
+        resources[SystemColors.InactiveSelectionHighlightBrushKey] = Get("App.AccentMutedBrush");
+        resources[SystemColors.InactiveSelectionHighlightTextBrushKey] = Get("App.TextBrush");
+        resources[SystemColors.GrayTextBrushKey] = Get("App.TextMutedBrush");
+        resources[SystemColors.MenuBrushKey] = Get("App.SurfaceBrush");
+        resources[SystemColors.MenuTextBrushKey] = Get("App.TextBrush");
+        resources[SystemColors.InfoBrushKey] = Get("App.SurfaceBrush");
+        resources[SystemColors.InfoTextBrushKey] = Get("App.TextBrush");
     }
 
     public static bool IsAppsDarkMode()

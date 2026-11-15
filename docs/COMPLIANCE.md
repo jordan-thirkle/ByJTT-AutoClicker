@@ -1,6 +1,6 @@
 # Windows alignment & compliance notes
 
-**ByJTT AutoClicker** (v4.2) is a classic Win32 desktop application built with **WPF on .NET 8**. This document describes how the app is designed to align with applicable Microsoft Windows desktop design and quality guidance (as of 2026), and what requires packaging-specific or manual validation.
+**ByJTT AutoClicker** (v4.2.1) is a classic Win32 desktop application built with **WPF on .NET 8**. This document describes how the app is designed to align with applicable Microsoft Windows desktop design and quality guidance (as of 2026), and what requires packaging-specific or manual validation.
 
 > **Important:** No single source repository or automated check can certify an app against *every* Microsoft guideline, certification, or policy. Store certification, MSIX packaging/identity rules, formal accessibility conformance (e.g. WCAG/Section 508), and security/product-safety sign-off depend on your target distribution, packaging, and validation in your environment. This project aims to follow applicable guidance in code and design, and to be transparent about scope and limitations.
 

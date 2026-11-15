@@ -111,14 +111,73 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisual}"/>
             <Setter Property="ToolTipService.ShowDuration" Value="15000"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="{DynamicResource App.TextMutedBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource App.SubtleBrush}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <Style TargetType="{x:Type ComboBox}">
             <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
             <Setter Property="Background" Value="{DynamicResource App.SurfaceAltBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource App.BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="MinHeight" Value="36"/>
             <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisual}"/>
+            <Setter Property="ToolTipService.ShowDuration" Value="15000"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="{DynamicResource App.TextMutedBrush}"/>
+                    <Setter Property="Opacity" Value="0.75"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="{x:Type ComboBoxItem}">
+            <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="MinHeight" Value="32"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="Transparent"
+                                BorderThickness="0"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource App.AccentMutedBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource App.AccentMutedBrush}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="IsHighlighted" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource App.SubtleBrush}"/>
+                            </MultiTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource App.TextMutedBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="{x:Type CheckBox}">
             <Setter Property="Foreground" Value="{DynamicResource App.TextBrush}"/>
